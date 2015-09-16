@@ -30,16 +30,36 @@ class ServeWordsInJSON < WEBrick::HTTPServlet::AbstractServlet
     end
 
     response.status = 200
-    response["Content-Type"] = "application/json"
     response["Access-Control-Allow-Origin"] = "*"
+    response["Content-Type"] = "application/json"
     response.body   = array_of_hashes.to_json
+  end
+end
+
+class SearchWord < WEBrick::HTTPServlet::AbstractServlet
+  def do_GET(request, response)
+    dictionary_lines = File.readlines("dictionary.txt")
+    search_results = dictionary_lines.select {|line| line.include?(request.query["q"])}
+
+    search_array = search_results.map do |line|
+      definition, word = line.chomp.split(" = ")
+      {
+        definition: definition,
+        word: word
+      }
+    end
+
+    response.status = 200
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Content-Type"] = "application/json"
+    response.body = search_array.to_json
   end
 end
 
 server = WEBrick::HTTPServer.new(Port: 3000)
 server.mount "/words.json", ServeWordsInJSON
 server.mount "/create", AddWordFromJSON
-# Create a new class for search and mount it here
+server.mount "/search", SearchWord
 
 trap "INT" do server.shutdown end
 server.start
