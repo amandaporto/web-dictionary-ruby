@@ -63,3 +63,6 @@ server.mount "/search", SearchWord
 
 trap "INT" do server.shutdown end
 server.start
+
+# Link to Web Dictionary. Must have server started.
+# http://tiy-tpa-ruby-q3-2015.github.io/web-dict-static/
